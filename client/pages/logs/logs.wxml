@@ -1,0 +1,131 @@
+<view class="record-page">
+
+  <!-- ── 普通用户 header ── -->
+  <view wx:if="{{!isAdmin}}" class="header-row">
+    <text class="header-title">打卡记录</text>
+    <button class="clear-btn" size="mini" bindtap="clearRecords">清空</button>
+  </view>
+
+  <!-- ── 管理员 header ── -->
+  <view wx:else class="header-row">
+    <text class="header-title">打卡记录</text>
+    <picker
+      mode="selector"
+      range="{{userNames}}"
+      value="{{selectedUserIndex}}"
+      bindchange="onUserPickerChange"
+      disabled="{{managedUsers.length === 0}}"
+    >
+      <view class="user-selector">
+        <text class="selector-name">{{selectedUserName || '加载中...'}}</text>
+        <image class="selector-arrow" src="../../image/down.png" mode="aspectFit"></image>
+      </view>
+    </picker>
+  </view>
+
+  <!-- ── 日历卡片 ── -->
+  <view class="month-card">
+
+    <!-- 月份导航 -->
+    <view class="cal-nav">
+      <view class="nav-btn" bindtap="prevMonth">
+        <text class="nav-icon">‹</text>
+      </view>
+
+      <picker
+        mode="multiSelector"
+        range="{{[yearRange, monthRange]}}"
+        value="{{pickerValue}}"
+        bindchange="onPickerChange"
+      >
+        <view class="cal-title-wrap">
+          <text class="cal-title-text">{{selectedYear}}年{{selectedMonthLabel}}月</text>
+          <image class="down-icon" src="../../image/down.png" mode="aspectFit"></image>
+        </view>
+      </picker>
+
+      <view class="nav-btn" bindtap="nextMonth">
+        <text class="nav-icon">›</text>
+      </view>
+    </view>
+
+    <view class="cal-subtitle">本月共打卡 {{checkedCount}} 次</view>
+
+    <!-- 星期标题 -->
+    <view class="week-row">
+      <text class="week-label" wx:for="{{weekLabels}}" wx:key="*this">{{item}}</text>
+    </view>
+
+    <!-- 日历格子 -->
+    <view class="calendar-grid" animation="{{calendarAnim}}">
+      <view
+        wx:for="{{calendarCells}}"
+        wx:key="dateKey"
+        class="cal-cell {{item.inMonth ? '' : 'cell-muted'}}"
+        bindtap="onDayTap"
+        data-day="{{item.day}}"
+        data-in-month="{{item.inMonth ? 1 : 0}}"
+      >
+        <view class="day-circle {{item.selected ? (item.today ? 'circle-today-sel' : 'circle-sel') : (item.today ? 'circle-today' : '')}}">
+          <text class="cell-num">{{item.day}}</text>
+        </view>
+        <view wx:if="{{item.checked}}" class="cell-dot {{item.selected ? 'dot-light' : ''}}"></view>
+      </view>
+    </view>
+
+  </view>
+
+  <!-- ── 当日记录 ── -->
+  <view class="day-section">
+    <text class="day-label">{{selectedDayLabel}}</text>
+
+    <view wx:if="{{selectedDayRecords.length === 0}}" class="empty-text">
+      当日暂无打卡记录
+    </view>
+
+    <view wx:for="{{selectedDayRecords}}" wx:key="id" class="record-card">
+      <view class="record-time">{{item.checkinTime}}</view>
+      <view
+        class="record-addr-row"
+        bindtap="showMap"
+        data-lat="{{item.latitude}}"
+        data-lng="{{item.longitude}}"
+        data-addr="{{item.address}}"
+        data-time="{{item.checkinTime}}"
+      >
+        <text class="record-location">{{item.address}}</text>
+        <text class="addr-arrow">›</text>
+      </view>
+      <image
+        wx:if="{{item.photo}}"
+        class="record-photo"
+        src="{{item.photo}}"
+        mode="aspectFill"
+        bindtap="previewImage"
+        data-url="{{item.photo}}"
+      ></image>
+    </view>
+  </view>
+
+  <!-- ── 地图弹窗 ── -->
+  <view wx:if="{{mapPopup.show}}" class="map-overlay" bindtap="hideMap">
+    <view class="map-modal" catchtap="">
+      <view class="map-modal-handle"></view>
+      <view class="map-modal-header">
+        <view class="map-modal-info">
+          <text class="map-modal-time">{{mapPopup.time}}</text>
+          <text class="map-modal-addr">{{mapPopup.address}}</text>
+        </view>
+        <view class="map-close-btn" bindtap="hideMap">✕</view>
+      </view>
+      <map
+        latitude="{{mapPopup.latitude}}"
+        longitude="{{mapPopup.longitude}}"
+        scale="16"
+        markers="{{mapPopup.markers}}"
+        class="map-view"
+      ></map>
+    </view>
+  </view>
+
+</view>

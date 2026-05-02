@@ -1,0 +1,37 @@
+﻿<view class="page">
+  <view class="page_check_hd">
+    <view class="page_check_title">{{activity_title}}</view>
+  </view>
+
+  <view class="check_image_bd">
+    <image class="check_image" src="{{photo}}"></image>
+  </view>
+
+  <view class="button-sp-area">
+    <button class="weui-btn primary-btn" bindtap="photoCheck">拍照打卡</button>
+  </view>
+
+  <view class="map_card">
+    <map
+      id="checkInMap"
+      class="check_map"
+      latitude="{{latitude}}"
+      longitude="{{longitude}}"
+      markers="{{markers}}"
+      scale="16"
+      show-location="true"
+      enable-rotate="false"
+      enable-overlooking="false"
+      enable-3D="false"
+    ></map>
+    <view class="map_meta">
+      <view class="map_status">{{location_res}}</view>
+      <view class="map_subtitle">{{address_text}}</view>
+    </view>
+  </view>
+
+  <view class="page__bd page__bd_spacing">
+    <view class="btn_footer"></view>
+    <button class="weui-btn success-btn" bindtap="submitCheck">完成打卡</button>
+  </view>
+</view>

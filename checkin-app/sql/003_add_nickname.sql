@@ -1,0 +1,3 @@
+USE checkin_prod;
+
+ALTER TABLE users ADD COLUMN nickname VARCHAR(64) DEFAULT NULL;

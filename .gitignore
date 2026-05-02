@@ -1,0 +1,30 @@
+# Environment & secrets
+checkin-app/.env
+checkin-app/**/.env
+
+# Uploaded check-in photos (user data)
+checkin-app/uploads/*
+!checkin-app/uploads/.gitkeep
+
+# Node
+node_modules/
+checkin-app/node_modules/
+server/checkin/node_modules/
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+.venv/
+venv/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# WeChat developer tool — per-developer files
+project.private.config.json
+miniprogram_npm/
+
+# Claude Code session data
+.claude/

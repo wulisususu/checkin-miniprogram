@@ -1,0 +1,31 @@
+<view class="login-page">
+  <image class="logo" src="../../image/avator.jpg" mode="aspectFill"></image>
+  <text class="app-title">位置打卡</text>
+  <text class="app-desc">记录每一次到达</text>
+
+  <view class="login-card">
+    <view class="nickname-row">
+      <text class="input-label">昵称</text>
+      <input
+        class="nickname-input"
+        type="nickname"
+        placeholder="点击使用微信昵称"
+        placeholder-class="input-placeholder"
+        value="{{nickname}}"
+        bindinput="onNicknameInput"
+        confirm-type="done"
+        maxlength="20"
+      />
+    </view>
+
+    <button
+      class="phone-btn"
+      open-type="getPhoneNumber"
+      bindgetphonenumber="onGetPhoneNumber"
+      loading="{{loading}}"
+      disabled="{{loading}}"
+    >手机号一键登录</button>
+
+    <text class="privacy-tip">登录即表示同意相关服务条款</text>
+  </view>
+</view>

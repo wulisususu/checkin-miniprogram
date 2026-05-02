@@ -1,0 +1,48 @@
+{
+  "pages": [
+    "pages/login/login",
+    "pages/checkIn/checkIn",
+    "pages/logs/logs",
+    "pages/user/user"
+  ],
+  "permission": {
+    "scope.userLocation": {
+      "desc": "需要定位权限"
+    }
+  },
+  "requiredPrivateInfos": [
+    "getLocation"
+  ],
+  "window": {
+    "backgroundTextStyle": "light",
+    "navigationBarBackgroundColor": "#fff",
+    "navigationBarTitleText": "WeChat",
+    "navigationBarTextStyle": "black"
+  },
+  "tabBar": {
+    "color": "#9b9b9b",
+    "selectedColor": "#2ba245",
+    "borderStyle": "white",
+    "position": "bottom",
+    "list": [
+      {
+        "pagePath": "pages/checkIn/checkIn",
+        "text": "CheckIn",
+        "iconPath": "image/search_normal.png",
+        "selectedIconPath": "image/search_pressed.png"
+      },
+      {
+        "pagePath": "pages/logs/logs",
+        "text": "Logs",
+        "iconPath": "image/manage_normal.png",
+        "selectedIconPath": "image/manage_pressed.png"
+      },
+      {
+        "pagePath": "pages/user/user",
+        "text": "Me",
+        "iconPath": "image/user_normal.png",
+        "selectedIconPath": "image/user_pressed.png"
+      }
+    ]
+  }
+}
