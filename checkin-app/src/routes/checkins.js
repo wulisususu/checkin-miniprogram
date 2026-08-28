@@ -1,8 +1,10 @@
-﻿const express = require("express");
-const path = require("path");
+const express = require("express");
+const fs = require("fs");
 const db = require("../config/db");
 const env = require("../config/env");
 const upload = require("../middlewares/upload");
+const { buildCheckinPayload } = require("../utils/checkinPayload");
+const { validateImageFile } = require("../utils/imageValidation");
 
 const router = express.Router();
 
@@ -10,48 +12,70 @@ function buildPhotoUrl(filename) {
   return `${env.publicBaseUrl}/uploads/${filename}`;
 }
 
-router.post("/", upload.single("photo"), async function (req, res) {
+async function removeUploadedFile(file) {
+  if (!file || !file.path) return;
   try {
-    const { openid, latitude, longitude, address, checkin_time } = req.body;
-    if (!openid || !latitude || !longitude || !req.file) {
+    await fs.promises.unlink(file.path);
+  } catch (err) {
+    if (err && err.code !== "ENOENT") {
+      console.error("failed to remove rejected upload:", err);
+    }
+  }
+}
+
+router.post("/", upload.single("photo"), async function (req, res) {
+  let keepUploadedFile = false;
+  try {
+    if (!req.file) {
       return res.status(400).json({
         code: 0,
         message: "openid, latitude, longitude and photo are required",
       });
     }
 
-    const lat = Number(latitude);
-    const lng = Number(longitude);
-    if (Number.isNaN(lat) || Number.isNaN(lng)) {
-      return res.status(400).json({ code: 0, message: "latitude/longitude invalid" });
-    }
+    await validateImageFile(req.file.path, req.file.mimetype);
 
-    const checkinTime = checkin_time ? new Date(checkin_time) : new Date();
-    if (Number.isNaN(checkinTime.getTime())) {
-      return res.status(400).json({ code: 0, message: "checkin_time invalid" });
-    }
-
-    const photoFilename = path.basename(req.file.filename);
-    const photoUrl = buildPhotoUrl(photoFilename);
+    const payload = buildCheckinPayload(req.body, req.file.filename);
+    const photoUrl = buildPhotoUrl(payload.photoFilename);
 
     const sql =
       "INSERT INTO checkin_records (openid, latitude, longitude, address, photo_url, checkin_time) VALUES (?, ?, ?, ?, ?, ?)";
-    const params = [openid, lat, lng, address || "", photoUrl, checkinTime];
+    const params = [
+      payload.openid,
+      payload.latitude,
+      payload.longitude,
+      payload.address,
+      photoUrl,
+      payload.checkinTime,
+    ];
     const [result] = await db.query(sql, params);
+    keepUploadedFile = true;
 
     return res.json({
       code: 1,
       data: {
         id: result.insertId,
-        openid,
-        latitude: lat,
-        longitude: lng,
-        address: address || "",
+        openid: payload.openid,
+        latitude: payload.latitude,
+        longitude: payload.longitude,
+        address: payload.address,
         photo_url: photoUrl,
-        checkin_time: checkinTime.toISOString(),
+        checkin_time: payload.checkinTime.toISOString(),
       },
     });
   } catch (error) {
+    if (!keepUploadedFile) {
+      await removeUploadedFile(req.file);
+    }
+
+    if (error && error.code === "INVALID_IMAGE_CONTENT") {
+      return res.status(400).json({ code: 0, message: error.message });
+    }
+    if (error && error.statusCode === 400) {
+      return res.status(400).json({ code: 0, message: error.message });
+    }
+
+    console.error("checkins POST error:", error);
     return res.status(500).json({ code: 0, message: "server error" });
   }
 });
@@ -75,6 +99,7 @@ router.get("/", async function (req, res) {
     const [rows] = await db.query(sql, params);
     return res.json({ code: 1, data: rows });
   } catch (error) {
+    console.error("checkins GET error:", error);
     return res.status(500).json({ code: 0, message: "server error" });
   }
 });
@@ -88,6 +113,7 @@ router.delete("/", async function (req, res) {
     const [result] = await db.query("DELETE FROM checkin_records WHERE openid = ?", [openid]);
     return res.json({ code: 1, data: { deleted: result.affectedRows } });
   } catch (error) {
+    console.error("checkins DELETE error:", error);
     return res.status(500).json({ code: 0, message: "server error" });
   }
 });
