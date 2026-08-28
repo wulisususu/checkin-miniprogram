@@ -10,6 +10,7 @@ const {
   validateImageFile,
 } = require("../src/utils/imageValidation");
 const { createRateLimiter } = require("../src/middlewares/rateLimit");
+const { parseAllowedOrigins, isOriginAllowed } = require("../src/utils/corsPolicy");
 
 test("check-in payload always uses server time instead of client-supplied time", () => {
   const serverNow = new Date("2026-08-28T12:34:56.000Z");
@@ -87,4 +88,13 @@ test("rate limiter blocks requests after the configured maximum", () => {
 
   now += 60_001;
   assert.equal(invoke().nextCalled, true);
+});
+
+test("CORS whitelist keeps non-browser clients compatible and rejects unknown browser origins", () => {
+  const allowed = parseAllowedOrigins("https://a.example.com, https://b.example.com");
+  assert.deepEqual(allowed, ["https://a.example.com", "https://b.example.com"]);
+  assert.equal(isOriginAllowed(undefined, allowed), true);
+  assert.equal(isOriginAllowed("https://a.example.com", allowed), true);
+  assert.equal(isOriginAllowed("https://evil.example.com", allowed), false);
+  assert.equal(isOriginAllowed("https://anything.example.com", []), true);
 });
