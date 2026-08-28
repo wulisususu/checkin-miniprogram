@@ -1,5 +1,6 @@
-﻿const path = require("path");
+const path = require("path");
 const dotenv = require("dotenv");
+const { parseAllowedOrigins } = require("../utils/corsPolicy");
 
 dotenv.config();
 
@@ -26,4 +27,9 @@ module.exports = {
     ? uploadDir
     : path.join(rootDir, uploadDir),
   publicBaseUrl,
+  corsOrigins: parseAllowedOrigins(process.env.CORS_ORIGINS),
+  rateLimit: {
+    windowMs: Number(process.env.RATE_LIMIT_WINDOW_MS || 60_000),
+    max: Number(process.env.RATE_LIMIT_MAX || 120),
+  },
 };
